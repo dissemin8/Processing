@@ -103,7 +103,7 @@ void setup() {
   println("Setup Started");
   println("  Size");
   size(1000, 1000);
-  //frameRate(9);
+  frameRate(1);
   println("  Background");
   background(0);
   rotateArray() ;
@@ -195,7 +195,7 @@ void drawNumbers() {
       textSize(100) ;
       int number = grid[gridx][gridy] ;
       if (number > 10) {
-        fill(220) ;
+        fill(10,10,255) ;
         String num = str(number - 10) ;
         text(num, gridx * boxsize + 68, gridy * boxsize + 138 ) ;
       } else if (number > 0) {
@@ -209,10 +209,13 @@ void drawNumbers() {
           for (int y = 0 ; y < 3 ; y++) {
             int candidate = y * 3 + x + 1 ;
             // println("gridx,gridy,candidate = ",gridx,gridy,candidate);
+            String boxnum = str(candidate) ;
             if (workGrid[gridx][gridy][candidate] == true) {
-              String boxnum = str(candidate) ;
-              text(boxnum, gridx * boxsize + 60 + x * 30, gridy * boxsize + 80 + y * 30 ) ;
+              fill(10,10,255) ; // candidate is true so it is still a possibilty 
+            } else {
+              fill(220) ; // candidate is false so it has been eliminated  
             }
+            text(boxnum, gridx * boxsize + 60 + x * 30, gridy * boxsize + 80 + y * 30 ) ;
           }
         }
       }
@@ -221,34 +224,48 @@ void drawNumbers() {
   println("drawNumbers Ended");
 }
 
-void runChecks() {
-  checkRows() ;
-  checkCols() ;
-  checkBoxs() ;
+
+
+void checkRow(int x, int y) {
+  // [col][y]  is the location of the source square
+  //   [x][y]  is the location of the target square (the hilighted one)
+  for (int col = 0 ; col < 9 ; col ++) {
+    if (grid[col][y] != 0) {       // only check source squares that are solved
+      if (col != x) {         // don't check aginst self 
+        int solved = grid[col][y] ;
+        if (solved > 9) solved = solved - 10 ;  
+        workGrid[x][y][solved] = false ; // remove candidate
+      }
+    }
+  }
 }
 
-void checkRows() {
-//  for (int row = 0 ; row < 9 ; row++) {
-//    drawGrid() ;
-//    drawNumbers() ;
-//    hiliteRow(row) ;
-//    redraw() ;
-//    delay(1000);
-//  }
+void checkCol(int x, int y) {
+  // [x][row]  is the location of the source square
+  // [x][y]    is the location of the target square (the hilighted one)
+  for (int row = 0 ; row < 9 ; row ++) {
+    if (grid[x][row] != 0) {  // only check source squares that are solved
+      if (row != y) {         // don't check aginst self 
+        int solved = grid[x][row] ;
+        if (solved > 9) solved = solved - 10 ;  
+        workGrid[x][y][solved] = false ; // remove candidate
+      }
+    }
+  }
 }
 
-void checkCols() {
+void checkBox(int x, int y) {
+  // x and y are the actual position of the square to check
+  // col and row need to be calculated from x and y
+  // [col][row]  is the location of the source square
+  // [x][y]      is the location of the target square (the hilighted one)
+  rowStart = ????? ;
+  colStart = ????? ;
+  for (int row = rowStart ; row < (rowStart + 3) ; row++) {
+    for (int col = colStart ; col < (colStart + 3) ; col++) {
+    }
+  }
 }
-
-void checkBoxs() {
-}
-
-void hiliteSqr(int hx, int hy) {
-      stroke(255,100,255) ;
-      rect(offset +  boxsize * hx , offset +  boxsize * hy , boxsize , boxsize ) ;
-}
-
-
 
 void hilite(int htype, int hx, int hy) {
   println("hilite Started");
@@ -272,6 +289,11 @@ void hilite(int htype, int hx, int hy) {
   println("hilite Ended");
 }
 
+void hiliteSqr(int hx, int hy) {
+      stroke(255,100,255) ;
+      rect(offset +  boxsize * hx , offset +  boxsize * hy , boxsize , boxsize ) ;
+}
+
 void draw() {
   println("   ");  
   println("draw Started");
@@ -288,6 +310,7 @@ void draw() {
     }
     hiliteSqr(sx, yy) ; // hilite 1x1
     // check candidates against rest of square here
+    checkRow(sx, yy)  ; //check square against all other squares in this row
     sx++ ;
     if (sx > 8) {
       newCheck = true ;
@@ -307,6 +330,7 @@ void draw() {
     }
     hiliteSqr(xx, sy) ; // hilite 1x1
     // check candidates against rest of square here ?
+    checkCol(xx, sy)  ; //check square against all other squares in this col
     sy++ ;
     if (sy > 8) {
       newCheck = true ;
@@ -327,6 +351,7 @@ void draw() {
     }
     hiliteSqr(xx * 3 + sx, yy * 3 + sy) ; // hilite 1x1
     // check candidates against rest of square here ? 
+    checkBox(xx * 3 + sx, yy * 3 + sy) ; //check square against all other squares in this box
     sx++ ;
     if (sx > 2) {
       sx = 0 ;
